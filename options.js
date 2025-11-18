@@ -43,20 +43,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Load saved configuration
 async function loadConfig() {
-    const config = await chrome.storage.sync.get(['apiProvider', 'apiKey', 'apiEndpoint', 'model']);
+    const config = await chrome.storage.sync.get(['apiProvider']);
 
     if (config.apiProvider) {
         apiProviderSelect.value = config.apiProvider;
-        handleProviderChange();
-    }
-    if (config.apiKey) {
-        apiKeyInput.value = config.apiKey;
-    }
-    if (config.apiEndpoint) {
-        apiEndpointInput.value = config.apiEndpoint;
-    }
-    if (config.model) {
-        modelInput.value = config.model;
+        await handleProviderChange();
     }
 }
 
@@ -67,18 +58,25 @@ function setupEventListeners() {
 }
 
 // Handle API provider changes
-function handleProviderChange() {
+async function handleProviderChange() {
     const provider = apiProviderSelect.value;
+
+    // Load saved config for this provider
+    const storageKey = `config_${provider}`;
+    const savedConfig = await chrome.storage.sync.get([storageKey]);
+    const providerConfig = savedConfig[storageKey] || {};
 
     if (provider === 'custom') {
         customEndpointGroup.style.display = 'block';
+        apiEndpointInput.value = providerConfig.apiEndpoint || '';
     } else {
         customEndpointGroup.style.display = 'none';
-        apiEndpointInput.value = API_CONFIGS[provider].endpoint;
-        if (!modelInput.value) {
-            modelInput.value = API_CONFIGS[provider].defaultModel;
-        }
+        apiEndpointInput.value = providerConfig.apiEndpoint || API_CONFIGS[provider].endpoint;
     }
+
+    // Load saved API key and model, or use defaults
+    apiKeyInput.value = providerConfig.apiKey || '';
+    modelInput.value = providerConfig.model || API_CONFIGS[provider].defaultModel;
 
     // Hide API key field for gemini-nano (uses Chrome built-in AI)
     const apiKeyGroup = document.querySelector('.form-group:has(#apiKey)');
@@ -93,7 +91,7 @@ function handleProviderChange() {
 async function saveConfig() {
     const apiProvider = apiProviderSelect.value;
     const apiKey = apiKeyInput.value.trim();
-    const apiEndpoint = apiProvider === 'custom' ? apiEndpointInput.value.trim() : API_CONFIGS[apiProvider].endpoint;
+    const apiEndpoint = apiEndpointInput.value.trim();
     const model = modelInput.value.trim();
 
     // API key not required for gemini-nano (Chrome built-in)
@@ -112,8 +110,21 @@ async function saveConfig() {
         return;
     }
 
+    // Save current provider
+    await chrome.storage.sync.set({ apiProvider });
+
+    // Save provider-specific config
+    const storageKey = `config_${apiProvider}`;
     await chrome.storage.sync.set({
-        apiProvider,
+        [storageKey]: {
+            apiKey,
+            apiEndpoint,
+            model
+        }
+    });
+
+    // Also save as default config for backward compatibility
+    await chrome.storage.sync.set({
         apiKey,
         apiEndpoint,
         model

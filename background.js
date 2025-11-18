@@ -1,35 +1,35 @@
 // Background Service Worker for AI Tab Classifier
 
-// 监听扩展安装
+// Listen for extension installation
 chrome.runtime.onInstalled.addListener(() => {
-    console.log('AI Tab Classifier 已安装');
+    console.log('AI Tab Classifier installed');
 
-    // 创建右键菜单
+    // Create context menus
     chrome.contextMenus.create({
         id: 'classifyTabs',
-        title: '🎯 AI分类标签页',
+        title: '🎯 Classify Tabs with AI',
         contexts: ['action']
     });
 
     chrome.contextMenus.create({
         id: 'ungroupAll',
-        title: '📋 取消所有分组',
+        title: '📋 Ungroup All Tabs',
         contexts: ['action']
     });
 
     chrome.contextMenus.create({
         id: 'openSettings',
-        title: '⚙️ 打开设置',
+        title: '⚙️ Settings',
         contexts: ['action']
     });
 });
 
-// 处理扩展图标点击 - 直接分类
+// Handle extension icon click - classify directly
 chrome.action.onClicked.addListener(async (tab) => {
     await classifyTabs();
 });
 
-// 处理右键菜单点击
+// Handle context menu clicks
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     if (info.menuItemId === 'classifyTabs') {
         await classifyTabs();
@@ -40,103 +40,103 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     }
 });
 
-// 分类标签页的主函数
+// Main function to classify tabs
 async function classifyTabs() {
     try {
-        console.log('开始分类标签页...');
+        console.log('Starting tab classification...');
 
-        // 设置图标为加载状态
+        // Set icon to loading state
         setIconState('loading');
 
-        // 获取配置
+        // Get configuration
         const config = await chrome.storage.sync.get(['apiProvider', 'apiKey', 'apiEndpoint', 'model']);
 
         if (!config.apiKey) {
-            setIconState('error', '请先在设置中配置API Key');
+            setIconState('error', 'Please configure API Key in settings');
             chrome.runtime.openOptionsPage();
             setTimeout(() => setIconState('idle'), 3000);
             return;
         }
 
-        // 获取所有标签页
+        // Get all tabs
         const tabs = await chrome.tabs.query({ currentWindow: true });
 
         if (tabs.length === 0) {
-            setIconState('error', '没有找到标签页');
+            setIconState('error', 'No tabs found');
             setTimeout(() => setIconState('idle'), 3000);
             return;
         }
 
-        // 只获取未分组的标签页 (groupId === -1 表示未分组)
+        // Get only ungrouped tabs (groupId === -1 means ungrouped)
         const ungroupedTabs = tabs.filter(tab => tab.groupId === -1);
 
         if (ungroupedTabs.length === 0) {
-            setIconState('idle', '所有标签页都已经分组');
+            setIconState('idle', 'All tabs are already grouped');
             return;
         }
 
-        // 准备标签页信息
+        // Prepare tab information
         const tabsInfo = ungroupedTabs.map(tab => ({
             id: tab.id,
             title: tab.title,
             url: tab.url
         }));
 
-        // 调用AI进行分类
+        // Call AI for classification
         const groups = await callAIForClassification(tabsInfo, config);
 
-        console.log('AI返回的分组数据:', groups);
+        console.log('AI returned group data:', groups);
 
-        // 验证返回的数据格式
+        // Validate returned data format
         if (!groups || !Array.isArray(groups) || groups.length === 0) {
-            setIconState('error', 'AI返回的分组数据格式不正确');
+            setIconState('error', 'Invalid group data format from AI');
             setTimeout(() => setIconState('idle'), 3000);
             return;
         }
 
-        // 应用分组
+        // Apply groups
         await applyGroups(groups);
 
-        setIconState('success', `成功分类 ${ungroupedTabs.length} 个标签页到 ${groups.length} 个分组！`);
+        setIconState('success', `Successfully classified ${ungroupedTabs.length} tabs into ${groups.length} groups!`);
         setTimeout(() => setIconState('idle'), 3000);
     } catch (error) {
-        console.error('分类失败:', error);
-        setIconState('error', `分类失败: ${error.message}`);
+        console.error('Classification failed:', error);
+        setIconState('error', `Classification failed: ${error.message}`);
         setTimeout(() => setIconState('idle'), 3000);
     }
 }
 
-// 调用AI API进行分类
+// Call AI API for classification
 async function callAIForClassification(tabs, config) {
-    const prompt = `请分析以下浏览器标签页，并将它们按照主题分组。对于每个组，提供一个简洁的中文组名。
+    const prompt = `Analyze the following browser tabs and group them by theme. Provide a concise group name for each group.
 
-标签页列表:
-${tabs.map((tab, i) => `${i + 1}. ID: ${tab.id}\n   标题: ${tab.title}\n   URL: ${tab.url}`).join('\n\n')}
+Tab list:
+${tabs.map((tab, i) => `${i + 1}. ID: ${tab.id}\n   Title: ${tab.title}\n   URL: ${tab.url}`).join('\n\n')}
 
-请以JSON格式返回结果，格式如下:
+Return the result in JSON format as follows:
 {
   "groups": [
     {
-      "name": "组名",
-      "tabIds": [标签页的ID数字数组，例如: [123, 456, 789]],
-      "color": "颜色(grey/blue/red/yellow/green/pink/purple/cyan/orange)"
+      "name": "Group Name",
+      "tabIds": [Array of tab ID numbers, e.g.: [123, 456, 789]],
+      "color": "Color (grey/blue/red/yellow/green/pink/purple/cyan/orange)"
     }
   ]
 }
 
-重要提示：
-1. tabIds 必须使用上面列表中提供的实际ID数字
-2. 每个标签页只能属于一个分组
-3. 根据主题合理分组（如：购物、新闻、开发、娱乐等）
-4. 组名要简洁明了（2-4个字）
-5. 选择合适的颜色来区分不同主题
-6. 只返回JSON，不要有其他文字
+Important notes:
+1. tabIds must use the actual ID numbers from the list above
+2. Each tab can only belong to one group
+3. Group by theme reasonably (e.g.: Shopping, News, Development, Entertainment, etc.)
+4. Group names should be concise (2-4 words)
+5. Choose appropriate colors to distinguish different themes
+6. Return only JSON, no other text
 
-示例：如果有ID为123的购物网站和ID为456的电商网站，应该返回：
+Example: If there are shopping sites with IDs 123 and 456, return:
 {
   "groups": [
     {
-      "name": "购物",
+      "name": "Shopping",
       "tabIds": [123, 456],
       "color": "red"
     }
@@ -200,12 +200,12 @@ ${tabs.map((tab, i) => `${i + 1}. ID: ${tab.id}\n   标题: ${tab.title}\n   URL
 
     if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`API请求失败: ${response.status} - ${errorText}`);
+        throw new Error(`API request failed: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
 
-    // 提取AI响应内容
+    // Extract AI response content
     let content;
     if (config.apiProvider === 'anthropic') {
         content = data.content[0].text;
@@ -216,98 +216,98 @@ ${tabs.map((tab, i) => `${i + 1}. ID: ${tab.id}\n   标题: ${tab.title}\n   URL
         content = data.choices[0].message.content;
     }
 
-    // 解析JSON
+    // Parse JSON
     const jsonMatch = content.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-        throw new Error('无法从AI响应中提取JSON');
+        throw new Error('Unable to extract JSON from AI response');
     }
 
     const result = JSON.parse(jsonMatch[0]);
     return result.groups;
 }
 
-// 应用分组
+// Apply groups
 async function applyGroups(groups) {
     const colors = ['grey', 'blue', 'red', 'yellow', 'green', 'pink', 'purple', 'cyan', 'orange'];
 
-    console.log('开始应用分组，共', groups.length, '个分组');
+    console.log('Starting to apply groups, total:', groups.length, 'groups');
 
-    // 为每个分组创建或更新标签组
+    // Create or update tab groups for each group
     for (let i = 0; i < groups.length; i++) {
         const group = groups[i];
-        console.log(`处理分组 ${i + 1}:`, group.name, '包含标签:', group.tabIds);
+        console.log(`Processing group ${i + 1}:`, group.name, 'includes tabs:', group.tabIds);
 
-        // 验证标签ID是否有效
+        // Validate tab IDsab IDs
         const validTabIds = [];
         for (const tabId of group.tabIds) {
             try {
                 const tab = await chrome.tabs.get(tabId);
                 validTabIds.push(tabId);
-                console.log(`  ✓ 标签 ${tabId} 有效: ${tab.title}`);
+                console.log(`  ✓ Tab ${tabId} valid: ${tab.title}`);
             } catch (e) {
-                console.warn(`  ✗ 标签 ${tabId} 不存在，跳过`);
+                console.warn(`  ✗ Tab ${tabId} does not exist, skipping`);
             }
         }
 
         if (validTabIds.length === 0) {
-            console.warn(`分组 "${group.name}" 没有有效的标签，跳过`);
+            console.warn(`Group "${group.name}" has no valid tabs, skipping`);
             continue;
         }
 
         const color = colors.includes(group.color) ? group.color : colors[i % colors.length];
 
         try {
-            console.log(`创建分组 "${group.name}"，标签IDs:`, validTabIds, '颜色:', color);
+            console.log(`Creating group "${group.name}", tab IDs:`, validTabIds, 'color:', color);
 
-            // 创建标签组
+            // Create tab group
             const groupId = await chrome.tabs.group({
                 tabIds: validTabIds
             });
 
-            console.log(`  → 分组ID: ${groupId}`);
+            console.log(`  → Group ID: ${groupId}`);
 
-            // 设置组属性
+            // Set group properties
             await chrome.tabGroups.update(groupId, {
                 title: group.name,
                 color: color,
                 collapsed: false
             });
 
-            console.log(`✓ 成功创建分组: ${group.name} (${validTabIds.length} 个标签)`);
+            console.log(`✓ Successfully created group: ${group.name} (${validTabIds.length} tabs)`);
         } catch (error) {
-            console.error(`✗ 创建分组 "${group.name}" 失败:`, error);
+            console.error(`✗ Failed to create group "${group.name}":`, error);
         }
     }
 
-    console.log('所有分组应用完成');
+    console.log('All groups applied successfully');
 }
 
-// 取消所有分组
+// Ungroup all tabs
 async function ungroupAll() {
     try {
-        console.log('开始取消所有分组...');
+        console.log('Starting to ungroup all tabs...');
 
         setIconState('loading');
 
-        // 获取当前窗口ID
+        // Get current window ID
         const allTabs = await chrome.tabs.query({ currentWindow: true });
         const currentWindowId = allTabs.length > 0 ? allTabs[0].windowId : undefined;
 
         if (!currentWindowId) {
-            setIconState('error', '无法获取当前窗口');
+            setIconState('error', 'Unable to get current window');
             setTimeout(() => setIconState('idle'), 3000);
             return;
         }
 
-        // 使用 tabGroups API 查询所有分组
+        // Query all groups using tabGroups API
         const groups = await chrome.tabGroups.query({ windowId: currentWindowId });
 
         if (groups.length === 0) {
-            setIconState('idle', '当前没有分组的标签页');
+            setIconState('idle', 'No grouped tabs currently');
             return;
         }
 
-        // 获取所有分组中的标签
+        // Get all tabs in groups
         const allGroupedTabIds = [];
         for (const group of groups) {
             const tabs = await chrome.tabs.query({ groupId: group.id });
@@ -318,44 +318,44 @@ async function ungroupAll() {
             await chrome.tabs.ungroup(allGroupedTabIds);
         }
 
-        setIconState('success', `已取消 ${groups.length} 个分组，共 ${allGroupedTabIds.length} 个标签页`);
+        setIconState('success', `Ungrouped ${groups.length} groups, ${allGroupedTabIds.length} tabs total`);
         setTimeout(() => setIconState('idle'), 3000);
     } catch (error) {
-        console.error('取消分组失败:', error);
-        setIconState('error', `取消分组失败: ${error.message}`);
+        console.error('Ungroup failed:', error);
+        setIconState('error', `Ungroup failed: ${error.message}`);
         setTimeout(() => setIconState('idle'), 3000);
     }
 }
 
-// 设置图标状态
+// Set icon state
 function setIconState(state, title = '') {
-    const defaultTitle = '点击开始AI分类标签页';
+    const defaultTitle = 'Click to classify tabs with AI';
 
     switch (state) {
         case 'loading':
-            // 加载中 - 使用badge显示
+            // Loading - display badge
             chrome.action.setBadgeText({ text: '...' });
             chrome.action.setBadgeBackgroundColor({ color: '#1a73e8' });
-            chrome.action.setTitle({ title: title || '正在处理...' });
+            chrome.action.setTitle({ title: title || 'Processing...' });
             break;
 
         case 'success':
-            // 成功 - 绿色badge
+            // Success - green badge
             chrome.action.setBadgeText({ text: '✓' });
             chrome.action.setBadgeBackgroundColor({ color: '#34a853' });
-            chrome.action.setTitle({ title: title || '操作成功' });
+            chrome.action.setTitle({ title: title || 'Operation successful' });
             break;
 
         case 'error':
-            // 错误 - 红色badge
+            // Error - red badge
             chrome.action.setBadgeText({ text: '✗' });
             chrome.action.setBadgeBackgroundColor({ color: '#ea4335' });
-            chrome.action.setTitle({ title: title || '操作失败' });
+            chrome.action.setTitle({ title: title || 'Operation failed' });
             break;
 
         case 'idle':
         default:
-            // 空闲 - 清除badge
+            // Idle - clear badge
             chrome.action.setBadgeText({ text: '' });
             chrome.action.setTitle({ title: title || defaultTitle });
             break;

@@ -1,48 +1,48 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Tab Classifier - 设置</title>
+    <title>AI Tab Classifier - Settings</title>
     <link rel="stylesheet" href="options.css">
 </head>
 
 <body>
     <div class="container">
-        <h1>⚙️ AI Tab Classifier 设置</h1>
+        <h1>⚙️ AI Tab Classifier Settings</h1>
 
         <div class="section">
-            <h2>API配置</h2>
+            <h2>API Configuration</h2>
             <div class="form-group">
-                <label for="apiProvider">API提供商:</label>
+                <label for="apiProvider">API Provider:</label>
                 <select id="apiProvider">
                     <option value="openai">OpenAI</option>
                     <option value="anthropic">Anthropic (Claude)</option>
                     <option value="deepseek">DeepSeek</option>
                     <option value="gemini">Google Gemini</option>
-                    <option value="custom">自定义</option>
+                    <option value="custom">Custom</option>
                 </select>
             </div>
 
             <div class="form-group">
                 <label for="apiKey">API Key:</label>
-                <input type="password" id="apiKey" placeholder="请输入您的API Key">
-                <small>您的API Key将安全地存储在本地，不会上传到任何服务器</small>
+                <input type="password" id="apiKey" placeholder="Enter your API Key">
+                <small>Your API Key is securely stored locally and never uploaded to any server</small>
             </div>
 
             <div class="form-group" id="customEndpointGroup" style="display: none;">
-                <label for="apiEndpoint">API端点:</label>
+                <label for="apiEndpoint">API Endpoint:</label>
                 <input type="text" id="apiEndpoint" placeholder="https://api.example.com/v1/chat/completions">
             </div>
 
             <div class="form-group">
-                <label for="model">模型:</label>
-                <input type="text" id="model" placeholder="gpt-3.5-turbo">
-                <small>不同的模型可能有不同的性能和成本</small>
+                <label for="model">Model:</label>
+                <input type="text" id="model" placeholder="gpt-4o-mini">
+                <small>Different models may have different performance and costs</small>
             </div>
 
-            <button id="saveConfig" class="btn btn-primary">💾 保存配置</button>
+            <button id="saveConfig" class="btn btn-primary">💾 Save Configuration</button>
             <div id="configStatus" class="status"></div>
         </div>
     </div>

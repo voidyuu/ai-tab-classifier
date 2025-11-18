@@ -1,4 +1,4 @@
-// 获取DOM元素
+// Get DOM elements
 const apiProviderSelect = document.getElementById('apiProvider');
 const apiKeyInput = document.getElementById('apiKey');
 const apiEndpointInput = document.getElementById('apiEndpoint');
@@ -7,7 +7,7 @@ const saveConfigBtn = document.getElementById('saveConfig');
 const configStatus = document.getElementById('configStatus');
 const customEndpointGroup = document.getElementById('customEndpointGroup');
 
-// 预设的API配置
+// Preset API configurations
 const API_CONFIGS = {
     openai: {
         endpoint: 'https://api.openai.com/v1/chat/completions',
@@ -31,13 +31,13 @@ const API_CONFIGS = {
     }
 };
 
-// 初始化
+// Initialize
 document.addEventListener('DOMContentLoaded', async () => {
     await loadConfig();
     setupEventListeners();
 });
 
-// 加载保存的配置
+// Load saved configuration
 async function loadConfig() {
     const config = await chrome.storage.sync.get(['apiProvider', 'apiKey', 'apiEndpoint', 'model']);
 
@@ -56,13 +56,13 @@ async function loadConfig() {
     }
 }
 
-// 设置事件监听
+// Setup event listeners
 function setupEventListeners() {
     apiProviderSelect.addEventListener('change', handleProviderChange);
     saveConfigBtn.addEventListener('click', saveConfig);
 }
 
-// 处理API提供商变化
+// Handle API provider changes
 function handleProviderChange() {
     const provider = apiProviderSelect.value;
 
@@ -77,7 +77,7 @@ function handleProviderChange() {
     }
 }
 
-// 保存配置
+// Save configuration
 async function saveConfig() {
     const apiProvider = apiProviderSelect.value;
     const apiKey = apiKeyInput.value.trim();
@@ -85,17 +85,17 @@ async function saveConfig() {
     const model = modelInput.value.trim();
 
     if (!apiKey) {
-        showStatus('error', '请输入API Key');
+        showStatus('error', 'Please enter API Key');
         return;
     }
 
     if (!apiEndpoint) {
-        showStatus('error', '请输入API端点');
+        showStatus('error', 'Please enter API endpoint');
         return;
     }
 
     if (!model) {
-        showStatus('error', '请输入模型名称');
+        showStatus('error', 'Please enter model name');
         return;
     }
 
@@ -106,10 +106,10 @@ async function saveConfig() {
         model
     });
 
-    showStatus('success', '✓ 配置保存成功！');
+    showStatus('success', '✓ Configuration saved successfully!');
 }
 
-// 显示状态消息
+// Display status message
 function showStatus(type, message) {
     configStatus.className = `status ${type}`;
     configStatus.textContent = message;

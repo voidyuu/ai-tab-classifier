@@ -9,6 +9,10 @@ const customEndpointGroup = document.getElementById('customEndpointGroup');
 
 // Preset API configurations
 const API_CONFIGS = {
+    'gemini-nano': {
+        endpoint: 'chrome-built-in',
+        defaultModel: 'gemini-nano'
+    },
     openai: {
         endpoint: 'https://api.openai.com/v1/chat/completions',
         defaultModel: 'gpt-4o-mini'
@@ -75,6 +79,14 @@ function handleProviderChange() {
             modelInput.value = API_CONFIGS[provider].defaultModel;
         }
     }
+
+    // Hide API key field for gemini-nano (uses Chrome built-in AI)
+    const apiKeyGroup = document.querySelector('.form-group:has(#apiKey)');
+    if (provider === 'gemini-nano') {
+        apiKeyGroup.style.display = 'none';
+    } else {
+        apiKeyGroup.style.display = 'block';
+    }
 }
 
 // Save configuration
@@ -84,7 +96,8 @@ async function saveConfig() {
     const apiEndpoint = apiProvider === 'custom' ? apiEndpointInput.value.trim() : API_CONFIGS[apiProvider].endpoint;
     const model = modelInput.value.trim();
 
-    if (!apiKey) {
+    // API key not required for gemini-nano (Chrome built-in)
+    if (!apiKey && apiProvider !== 'gemini-nano') {
         showStatus('error', 'Please enter API Key');
         return;
     }

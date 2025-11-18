@@ -1,29 +1,5 @@
 // Background Service Worker for AI Tab Classifier
 
-// 预设的API配置
-const API_CONFIGS = {
-    openai: {
-        endpoint: 'https://api.openai.com/v1/chat/completions',
-        defaultModel: 'gpt-3.5-turbo'
-    },
-    anthropic: {
-        endpoint: 'https://api.anthropic.com/v1/messages',
-        defaultModel: 'claude-3-haiku-20240307'
-    },
-    deepseek: {
-        endpoint: 'https://api.deepseek.com/v1/chat/completions',
-        defaultModel: 'deepseek-chat'
-    },
-    gemini: {
-        endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/',
-        defaultModel: 'gemini-2.5-flash-lite'
-    },
-    custom: {
-        endpoint: '',
-        defaultModel: ''
-    }
-};
-
 // 监听扩展安装
 chrome.runtime.onInstalled.addListener(() => {
     console.log('AI Tab Classifier 已安装');

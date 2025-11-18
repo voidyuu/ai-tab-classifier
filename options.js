@@ -11,11 +11,11 @@ const customEndpointGroup = document.getElementById('customEndpointGroup');
 const API_CONFIGS = {
     openai: {
         endpoint: 'https://api.openai.com/v1/chat/completions',
-        defaultModel: 'gpt-3.5-turbo'
+        defaultModel: 'gpt-4o-mini'
     },
     anthropic: {
         endpoint: 'https://api.anthropic.com/v1/messages',
-        defaultModel: 'claude-3-haiku-20240307'
+        defaultModel: 'claude-3-5-haiku-20241022'
     },
     deepseek: {
         endpoint: 'https://api.deepseek.com/v1/chat/completions',
@@ -23,7 +23,7 @@ const API_CONFIGS = {
     },
     gemini: {
         endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/',
-        defaultModel: 'gemini-2.5-flash-lite'
+        defaultModel: 'gemini-2.0-flash-exp'
     },
     custom: {
         endpoint: '',

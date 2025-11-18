@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tab Classifier - 设置</title>
+    <link rel="stylesheet" href="options.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>⚙️ AI Tab Classifier 设置</h1>
+
+        <div class="section">
+            <h2>API配置</h2>
+            <div class="form-group">
+                <label for="apiProvider">API提供商:</label>
+                <select id="apiProvider">
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic (Claude)</option>
+                    <option value="deepseek">DeepSeek</option>
+                    <option value="gemini">Google Gemini</option>
+                    <option value="custom">自定义</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="apiKey">API Key:</label>
+                <input type="password" id="apiKey" placeholder="请输入您的API Key">
+                <small>您的API Key将安全地存储在本地，不会上传到任何服务器</small>
+            </div>
+
+            <div class="form-group" id="customEndpointGroup" style="display: none;">
+                <label for="apiEndpoint">API端点:</label>
+                <input type="text" id="apiEndpoint" placeholder="https://api.example.com/v1/chat/completions">
+            </div>
+
+            <div class="form-group">
+                <label for="model">模型:</label>
+                <input type="text" id="model" placeholder="gpt-3.5-turbo">
+                <small>不同的模型可能有不同的性能和成本</small>
+            </div>
+
+            <button id="saveConfig" class="btn btn-primary">💾 保存配置</button>
+            <div id="configStatus" class="status"></div>
+        </div>
+
+        <div class="section">
+            <h2>帮助信息</h2>
+            <div class="help-box">
+                <h3>如何获取API Key？</h3>
+                <ul>
+                    <li><strong>OpenAI:</strong> 访问 <a href="https://platform.openai.com/api-keys"
+                            target="_blank">platform.openai.com/api-keys</a></li>
+                    <li><strong>Anthropic:</strong> 访问 <a href="https://console.anthropic.com/"
+                            target="_blank">console.anthropic.com</a></li>
+                    <li><strong>DeepSeek:</strong> 访问 <a href="https://platform.deepseek.com/"
+                            target="_blank">platform.deepseek.com</a></li>
+                    <li><strong>Google Gemini:</strong> 访问 <a href="https://makersuite.google.com/app/apikey"
+                            target="_blank">makersuite.google.com/app/apikey</a></li>
+                </ul>
+            </div>
+
+            <div class="help-box">
+                <h3>推荐模型</h3>
+                <ul>
+                    <li><strong>OpenAI:</strong> gpt-3.5-turbo (快速且经济) 或 gpt-4 (更准确)</li>
+                    <li><strong>Anthropic:</strong> claude-3-haiku-20240307 (快速) 或 claude-3-sonnet-20240229 (平衡)</li>
+                    <li><strong>DeepSeek:</strong> deepseek-chat</li>
+                    <li><strong>Google Gemini:</strong> gemini-2.5-flash-lite 或 gemini-pro</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script src="options.js"></script>
+</body>
+
+</html>

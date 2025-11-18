@@ -22,8 +22,8 @@ const API_CONFIGS = {
         defaultModel: 'deepseek-chat'
     },
     gemini: {
-        endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/',
-        defaultModel: 'gemini-2.0-flash-exp'
+        endpoint: 'https://generativelanguage.googleapis.com/v1beta/models',
+        defaultModel: 'gemini-2.5-flash-lite'
     },
     custom: {
         endpoint: '',

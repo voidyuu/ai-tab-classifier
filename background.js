@@ -108,7 +108,15 @@ async function classifyTabs() {
 
 // Call AI API for classification
 async function callAIForClassification(tabs, config) {
+    // Normalize endpoint URL (remove trailing slash to avoid double slashes)
+    const normalizeEndpoint = (url) => url.replace(/\/+$/, '');
+    const endpoint = normalizeEndpoint(config.apiEndpoint);
+
+    // Get Chrome's display language
+    const uiLanguage = chrome.i18n.getUILanguage(); // e.g., "zh-CN", "en-US", "ja"
+
     const prompt = `Analyze the following browser tabs and group them by theme. Provide a concise group name for each group.
+Determine the language of the tab group names based on this locale code: ${uiLanguage}
 
 Tab list:
 ${tabs.map((tab, i) => `${i + 1}. ID: ${tab.id}\n   Title: ${tab.title}\n   URL: ${tab.url}`).join('\n\n')}
@@ -147,7 +155,7 @@ Example: If there are shopping sites with IDs 123 and 456, return:
 
     if (config.apiProvider === 'anthropic') {
         // Anthropic API
-        response = await fetch(config.apiEndpoint, {
+        response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -165,7 +173,7 @@ Example: If there are shopping sites with IDs 123 and 456, return:
         });
     } else if (config.apiProvider === 'gemini') {
         // Google Gemini API
-        const url = `${config.apiEndpoint}${config.model}:generateContent?key=${config.apiKey}`;
+        const url = `${endpoint}/${config.model}:generateContent?key=${config.apiKey}`;
         response = await fetch(url, {
             method: 'POST',
             headers: {
@@ -181,7 +189,7 @@ Example: If there are shopping sites with IDs 123 and 456, return:
         });
     } else {
         // OpenAI, DeepSeek or custom API (compatible with OpenAI format)
-        response = await fetch(config.apiEndpoint, {
+        response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

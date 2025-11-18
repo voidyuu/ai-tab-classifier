@@ -2,7 +2,7 @@
     "manifest_version": 3,
     "name": "AI Tab Classifier",
     "version": "1.0.0",
-    "description": "使用AI自动分类和分组浏览器标签页",
+    "description": "Automatically organize and group your browser tabs using AI-powered classification",
     "permissions": [
         "tabs",
         "tabGroups",
@@ -15,7 +15,7 @@
             "48": "icons/icon48.png",
             "128": "icons/icon128.png"
         },
-        "default_title": "点击开始AI分类标签页"
+        "default_title": "Click to start"
     },
     "background": {
         "service_worker": "background.js"

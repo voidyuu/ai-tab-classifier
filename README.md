@@ -22,14 +22,6 @@ Automatically organize and group your browser tabs using AI-powered classificati
 - **Google Gemini** - Gemini 2.0 Flash and other models
 - **Custom API** - Any OpenAI-compatible API endpoint
 
-## Installation
-
-1. Download or clone this repository
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" in the top right
-4. Click "Load unpacked" and select the extension directory
-5. Configure your preferred AI provider in the extension settings
-
 ## Usage
 
 ### Quick Start
@@ -90,29 +82,9 @@ The extension icon badge shows real-time status:
 
 ## Permissions
 
-- **tabs** - Read tab titles and URLs for classification
-- **tabGroups** - Create and manage tab groups
-- **storage** - Save your API configuration
-- **contextMenus** - Add right-click menu options
+Completely clean, no permissions required to read any web page content!
 
 ## Development
-
-### Project Structure
-
-```
-ai-tab-classifier/
-├── manifest.json           # Extension configuration
-├── background.js           # Service worker entry point
-├── options.html/js/css     # Settings page
-├── core/                   # Core functionality modules
-│   ├── classify-tabs.js
-│   ├── apply-groups.js
-│   ├── call-AI-for-classification.js
-│   ├── set-icon-state.js
-│   └── ungroup-all.js
-├── icons/                  # Extension icons
-└── assets/                 # Screenshots and media
-```
 
 ### Building
 

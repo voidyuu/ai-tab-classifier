@@ -7,7 +7,7 @@ async function callAIForClassification(tabs, config) {
     // Get Chrome's display language
     const uiLanguage = chrome.i18n.getUILanguage(); // e.g., "zh-CN", "en-US", "ja"
 
-    const prompt = `Analyze the following browser tabs and group them by theme. Provide a concise group name for each group.
+    const prompt = `Analyze the following browser tabs and group them by theme. Provide a concise group name for each group. The group name should be as short as possible (no more than 2 words in English or 2 characters in other languages).
 Determine the language of the tab group names based on this locale code: ${uiLanguage}
 
 Tab list:

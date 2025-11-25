@@ -24,6 +24,12 @@ Automatically organize and group your browser tabs using AI-powered classificati
 
 ## Usage
 
+## Install
+
+Click the link below to install the plugin.
+
+[Go to Chrome Web Store](https://chromewebstore.google.com/detail/plbfldpklbmelkkdjhgjmilnpfaljfod?utm_source=item-share-cb)
+
 ### Quick Start
 
 1. **Left-click** the extension icon to instantly classify all ungrouped tabs

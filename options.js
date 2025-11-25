@@ -9,10 +9,6 @@ const customEndpointGroup = document.getElementById('customEndpointGroup');
 
 // Preset API configurations
 const API_CONFIGS = {
-    'gemini-nano': {
-        endpoint: 'chrome-built-in',
-        defaultModel: 'gemini-nano'
-    },
     openai: {
         endpoint: 'https://api.openai.com/v1/chat/completions',
         defaultModel: 'gpt-4o-mini'
@@ -32,6 +28,10 @@ const API_CONFIGS = {
     custom: {
         endpoint: '',
         defaultModel: ''
+    },
+    'gemini-nano': {
+        endpoint: 'chrome-built-in',
+        defaultModel: 'gemini-nano'
     }
 };
 
@@ -47,8 +47,10 @@ async function loadConfig() {
 
     if (config.apiProvider) {
         apiProviderSelect.value = config.apiProvider;
-        await handleProviderChange();
     }
+    
+    // Always trigger handleProviderChange to update UI
+    await handleProviderChange();
 }
 
 // Setup event listeners

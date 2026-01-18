@@ -23,11 +23,6 @@ chrome.runtime.onInstalled.addListener(() => {
         contexts: ['action']
     });
 
-    chrome.contextMenus.create({
-        id: 'openSettings',
-        title: '⚙️ Settings',
-        contexts: ['action']
-    });
 });
 
 // Handle extension icon click - classify directly

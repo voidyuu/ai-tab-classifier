@@ -8,8 +8,7 @@ async function classifyTabs(windowId) {
         // Get configuration
         const config = await chrome.storage.sync.get(['apiProvider', 'apiKey', 'apiEndpoint', 'model']);
 
-        // API key not required for gemini-nano (Chrome built-in)
-        if (!config.apiKey && config.apiProvider !== 'gemini-nano') {
+        if (!config.apiKey) {
             setIconState('error', 'Please configure API Key in settings');
             chrome.runtime.openOptionsPage();
             setTimeout(() => setIconState('idle'), 3000);

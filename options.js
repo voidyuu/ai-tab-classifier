@@ -5,7 +5,6 @@ const apiEndpointInput = document.getElementById('apiEndpoint');
 const modelInput = document.getElementById('model');
 const saveConfigBtn = document.getElementById('saveConfig');
 const configStatus = document.getElementById('configStatus');
-const customEndpointGroup = document.getElementById('customEndpointGroup');
 
 // Preset API configurations
 const API_CONFIGS = {
@@ -17,17 +16,9 @@ const API_CONFIGS = {
         endpoint: 'https://api.anthropic.com/v1/messages',
         defaultModel: 'claude-3-5-haiku-20241022'
     },
-    deepseek: {
-        endpoint: 'https://api.deepseek.com/v1/chat/completions',
-        defaultModel: 'deepseek-chat'
-    },
     gemini: {
         endpoint: 'https://generativelanguage.googleapis.com/v1beta/models',
         defaultModel: 'gemini-2.5-flash-lite'
-    },
-    custom: {
-        endpoint: '',
-        defaultModel: ''
     }
 };
 
@@ -41,8 +32,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 async function loadConfig() {
     const config = await chrome.storage.sync.get(['apiProvider']);
 
-    if (config.apiProvider) {
+    if (config.apiProvider && API_CONFIGS[config.apiProvider]) {
         apiProviderSelect.value = config.apiProvider;
+    } else {
+        apiProviderSelect.value = 'openai';
     }
 
     // Always trigger handleProviderChange to update UI
@@ -57,20 +50,16 @@ function setupEventListeners() {
 
 // Handle API provider changes
 async function handleProviderChange() {
-    const provider = apiProviderSelect.value;
+    const provider = API_CONFIGS[apiProviderSelect.value] ? apiProviderSelect.value : 'openai';
+
+    if (apiProviderSelect.value !== provider) {
+        apiProviderSelect.value = provider;
+    }
 
     // Load saved config for this provider
     const storageKey = `config_${provider}`;
     const savedConfig = await chrome.storage.sync.get([storageKey]);
     const providerConfig = savedConfig[storageKey] || {};
-
-    if (provider === 'custom') {
-        customEndpointGroup.style.display = 'block';
-        apiEndpointInput.value = providerConfig.apiEndpoint || '';
-    } else {
-        customEndpointGroup.style.display = 'none';
-        apiEndpointInput.value = providerConfig.apiEndpoint || API_CONFIGS[provider].endpoint;
-    }
 
     // Load saved API key and model, or use defaults
     apiKeyInput.value = providerConfig.apiKey || '';
@@ -85,16 +74,10 @@ async function handleProviderChange() {
 async function saveConfig() {
     const apiProvider = apiProviderSelect.value;
     const apiKey = apiKeyInput.value.trim();
-    const apiEndpoint = apiEndpointInput.value.trim();
     const model = modelInput.value.trim();
 
     if (!apiKey) {
         showStatus('error', 'Please enter API Key');
-        return;
-    }
-
-    if (!apiEndpoint) {
-        showStatus('error', 'Please enter API endpoint');
         return;
     }
 
@@ -111,7 +94,7 @@ async function saveConfig() {
     await chrome.storage.sync.set({
         [storageKey]: {
             apiKey,
-            apiEndpoint,
+            apiEndpoint: API_CONFIGS[apiProvider].endpoint,
             model
         }
     });
@@ -119,7 +102,7 @@ async function saveConfig() {
     // Also save as default config for backward compatibility
     await chrome.storage.sync.set({
         apiKey,
-        apiEndpoint,
+        apiEndpoint: API_CONFIGS[apiProvider].endpoint,
         model
     });
 

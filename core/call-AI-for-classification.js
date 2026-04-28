@@ -81,7 +81,7 @@ Example: If there are shopping sites with IDs 123 and 456, return:
             })
         });
     } else {
-        // OpenAI, DeepSeek or custom API (compatible with OpenAI format)
+        // OpenAI API
         response = await fetch(endpoint, {
             method: 'POST',
             headers: {
@@ -112,7 +112,7 @@ Example: If there are shopping sites with IDs 123 and 456, return:
     } else if (config.apiProvider === 'gemini') {
         content = data.candidates[0].content.parts[0].text;
     } else {
-        // OpenAI, DeepSeek or custom (OpenAI-compatible)
+        // OpenAI response format
         content = data.choices[0].message.content;
     }
 

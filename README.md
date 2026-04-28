@@ -11,16 +11,13 @@ Automatically organize and group your browser tabs using AI-powered classificati
 🎯 **One-Click Organization** - Simply click the extension icon to classify all ungrouped tabs  
 🌐 **Multi-Language Support** - Group names adapt to your Chrome display language  
 🔒 **Privacy-First** - All processing happens locally or through your chosen AI provider  
-⚡ **Multiple AI Providers** - Supports OpenAI, Anthropic Claude, DeepSeek, Google Gemini, and Chrome built-in AI
+⚡ **Multiple AI Providers** - Supports OpenAI, Anthropic Claude, and Google Gemini
 
 ## Supported AI Providers
 
-- **Chrome Built-in AI (Gemini Nano)** - No API key required, fully local
 - **OpenAI** - GPT-4o-mini and other models
 - **Anthropic Claude** - Claude 3.5 Haiku and other models
-- **DeepSeek** - DeepSeek Chat
 - **Google Gemini** - Gemini 2.0 Flash and other models
-- **Custom API** - Any OpenAI-compatible API endpoint
 
 ## Usage
 
@@ -42,24 +39,9 @@ Click the link below to install the plugin.
 
 1. Click the ⚙️ Settings option or right-click → Settings
 2. Select your preferred AI provider
-3. Enter your API credentials (not required for Chrome Built-in AI)
-4. Customize model and endpoint settings if needed
+3. Enter your API credentials
+4. Customize model settings if needed
 5. Click Save
-
-### Chrome Built-in AI (Gemini Nano)
-
-To use Chrome's built-in AI without API keys:
-
-1. Use Chrome 128+ (Canary, Dev, or Beta)
-2. Enable `chrome://flags/#prompt-api-for-gemini-nano`
-3. Restart Chrome and wait for the model to download
-4. Select "Chrome Built-in AI (Gemini Nano)" in settings
-5. No API key required - just save and start using!
-
-**Requirements:**
-- Chrome 128 or later
-- At least 22 GB free disk space
-- GPU with >4GB VRAM or CPU with 16GB+ RAM
 
 ## How It Works
 
@@ -84,7 +66,6 @@ The extension icon badge shows real-time status:
 - API keys are stored locally using Chrome's secure storage
 - Each provider's configuration is stored separately
 - No data is sent to third parties
-- Chrome Built-in AI operates entirely offline
 
 ## Permissions
 
@@ -104,13 +85,6 @@ No build step required. The extension uses vanilla JavaScript and can be loaded 
 
 **"Please configure API Key" message:**
 - Open Settings and configure your AI provider credentials
-- Or select Chrome Built-in AI (no API key needed)
-
-**Gemini Nano not available:**
-- Check Chrome version (must be 128+)
-- Enable the flag: `chrome://flags/#prompt-api-for-gemini-nano`
-- Ensure sufficient disk space (22GB+)
-- Verify hardware requirements
 
 **Classification seems incorrect:**
 - Try different AI models for better results

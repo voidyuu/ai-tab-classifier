@@ -21,6 +21,21 @@ function resolveBaseUrl(provider, endpoint) {
     return trimmedEndpoint || DEFAULT_BASE_URLS[provider] || trimmedEndpoint;
 }
 
+function extractAnthropicText(data) {
+    if (typeof data?.content === 'string') {
+        return data.content;
+    }
+
+    if (Array.isArray(data?.content)) {
+        const textBlock = data.content.find((block) => typeof block?.text === 'string' && block.text.trim());
+        if (textBlock) {
+            return textBlock.text;
+        }
+    }
+
+    return data?.output_text || data?.text || '';
+}
+
 async function callAIForClassification(tabs, config) {
     // Resolve the base URL for the current provider
     const endpoint = resolveBaseUrl(config.apiProvider, config.apiEndpoint);
@@ -79,7 +94,7 @@ Example: If there are shopping sites with IDs 123 and 456, return:
             },
             body: JSON.stringify({
                 model: config.model,
-                max_tokens: 2048,
+                max_tokens: 4096,
                 messages: [{
                     role: 'user',
                     content: prompt
@@ -130,13 +145,25 @@ Example: If there are shopping sites with IDs 123 and 456, return:
 
     const data = await response.json();
 
+    if (!data || typeof data !== 'object') {
+        throw new Error('Invalid response format from AI provider');
+    }
+
     if (config.apiProvider === 'anthropic') {
-        content = data.content[0].text;
+        content = extractAnthropicText(data);
     } else if (config.apiProvider === 'gemini') {
         content = data.candidates[0].content.parts[0].text;
     } else {
         // OpenAI response format
         content = data.choices[0].message.content;
+    }
+
+    if (typeof content !== 'string' || !content.trim()) {
+        if (config.apiProvider === 'anthropic' && data.stop_reason === 'max_tokens') {
+            throw new Error('Claude response was truncated by max_tokens');
+        }
+
+        throw new Error('Invalid response content from AI provider');
     }
 
     // Parse JSON

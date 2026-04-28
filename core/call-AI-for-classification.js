@@ -46,42 +46,7 @@ Example: If there are shopping sites with IDs 123 and 456, return:
     let response;
     let content;
 
-    if (config.apiProvider === 'gemini-nano') {
-        // Chrome built-in Gemini Nano
-        try {
-            // Check if LanguageModel API is available
-            if (typeof LanguageModel === 'undefined') {
-                throw new Error('Chrome built-in AI is not available. Please use Chrome 128+ and enable chrome://flags/#prompt-api-for-gemini-nano');
-            }
-
-            const availability = await LanguageModel.availability();
-            if (availability === 'no') {
-                throw new Error('Chrome built-in AI is not available on this device');
-            }
-
-            if (availability === 'after-download') {
-                throw new Error('Model needs to be downloaded first. Please wait and try again.');
-            }
-
-            // Create session with initial prompts
-            const session = await LanguageModel.create({
-                initialPrompts: [
-                    {
-                        role: 'system',
-                        content: 'You are a helpful assistant that organizes browser tabs into logical groups.'
-                    }
-                ]
-            });
-
-            // Get response
-            content = await session.prompt(prompt);
-
-            // Clean up
-            session.destroy();
-        } catch (error) {
-            throw new Error(`Gemini Nano error: ${error.message}`);
-        }
-    } else if (config.apiProvider === 'anthropic') {
+    if (config.apiProvider === 'anthropic') {
         // Anthropic API
         response = await fetch(endpoint, {
             method: 'POST',
@@ -134,23 +99,21 @@ Example: If there are shopping sites with IDs 123 and 456, return:
         });
     }
 
-    // Extract AI response content (only for API-based providers)
-    if (config.apiProvider !== 'gemini-nano') {
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`API request failed: ${response.status} - ${errorText}`);
-        }
+    // Extract AI response content
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API request failed: ${response.status} - ${errorText}`);
+    }
 
-        const data = await response.json();
+    const data = await response.json();
 
-        if (config.apiProvider === 'anthropic') {
-            content = data.content[0].text;
-        } else if (config.apiProvider === 'gemini') {
-            content = data.candidates[0].content.parts[0].text;
-        } else {
-            // OpenAI, DeepSeek or custom (OpenAI-compatible)
-            content = data.choices[0].message.content;
-        }
+    if (config.apiProvider === 'anthropic') {
+        content = data.content[0].text;
+    } else if (config.apiProvider === 'gemini') {
+        content = data.candidates[0].content.parts[0].text;
+    } else {
+        // OpenAI, DeepSeek or custom (OpenAI-compatible)
+        content = data.choices[0].message.content;
     }
 
     // Parse JSON

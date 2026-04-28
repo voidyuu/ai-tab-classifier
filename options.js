@@ -1,10 +1,11 @@
 // Get DOM elements
-const apiProviderSelect = document.getElementById('apiProvider');
 const apiKeyInput = document.getElementById('apiKey');
-const apiEndpointInput = document.getElementById('apiEndpoint');
 const modelInput = document.getElementById('model');
 const saveConfigBtn = document.getElementById('saveConfig');
 const configStatus = document.getElementById('configStatus');
+const apiProviderTabs = Array.from(document.querySelectorAll('.provider-tab'));
+
+let activeProvider = 'openai';
 
 // Preset API configurations
 const API_CONFIGS = {
@@ -33,28 +34,35 @@ async function loadConfig() {
     const config = await chrome.storage.sync.get(['apiProvider']);
 
     if (config.apiProvider && API_CONFIGS[config.apiProvider]) {
-        apiProviderSelect.value = config.apiProvider;
+        activeProvider = config.apiProvider;
     } else {
-        apiProviderSelect.value = 'openai';
+        activeProvider = 'openai';
     }
 
-    // Always trigger handleProviderChange to update UI
     await handleProviderChange();
 }
 
 // Setup event listeners
 function setupEventListeners() {
-    apiProviderSelect.addEventListener('change', handleProviderChange);
+    apiProviderTabs.forEach((tab) => {
+        tab.addEventListener('click', async () => {
+            activeProvider = tab.dataset.provider;
+            await handleProviderChange();
+        });
+    });
     saveConfigBtn.addEventListener('click', saveConfig);
 }
 
 // Handle API provider changes
 async function handleProviderChange() {
-    const provider = API_CONFIGS[apiProviderSelect.value] ? apiProviderSelect.value : 'openai';
+    const provider = API_CONFIGS[activeProvider] ? activeProvider : 'openai';
+    activeProvider = provider;
 
-    if (apiProviderSelect.value !== provider) {
-        apiProviderSelect.value = provider;
-    }
+    apiProviderTabs.forEach((tab) => {
+        const isActive = tab.dataset.provider === provider;
+        tab.classList.toggle('active', isActive);
+        tab.setAttribute('aria-selected', String(isActive));
+    });
 
     // Load saved config for this provider
     const storageKey = `config_${provider}`;
@@ -72,7 +80,7 @@ async function handleProviderChange() {
 
 // Save configuration
 async function saveConfig() {
-    const apiProvider = apiProviderSelect.value;
+    const apiProvider = activeProvider;
     const apiKey = apiKeyInput.value.trim();
     const model = modelInput.value.trim();
 

@@ -10,17 +10,21 @@
 
 <body>
     <div class="container">
-        <h1>⚙️ AI Tab Classifier Settings</h1>
+        <header class="page-header">
+            <p class="eyebrow">Extension Settings</p>
+            <h1>AI Tab Classifier</h1>
+            <p class="page-subtitle">Choose a provider, set your model, and save. The interface stays compact and focused so the controls are easy to scan.</p>
+        </header>
 
-        <div class="section">
+        <div class="section section-card">
             <h2>API Configuration</h2>
             <div class="form-group">
                 <label for="apiProvider">API Provider:</label>
-                <select id="apiProvider">
-                    <option value="gemini">Google Gemini</option>
-                    <option value="openai">OpenAI</option>
-                    <option value="anthropic">Anthropic (Claude)</option>
-                </select>
+                <div class="provider-tabs" role="tablist" aria-label="API Provider">
+                    <button type="button" class="provider-tab" data-provider="gemini" role="tab" aria-selected="false">Google Gemini</button>
+                    <button type="button" class="provider-tab" data-provider="openai" role="tab" aria-selected="false">OpenAI</button>
+                    <button type="button" class="provider-tab" data-provider="anthropic" role="tab" aria-selected="false">Anthropic (Claude)</button>
+                </div>
             </div>
 
             <div class="form-group">

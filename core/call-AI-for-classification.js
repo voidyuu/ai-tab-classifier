@@ -1,8 +1,29 @@
 // Call AI API for classification
+const DEFAULT_BASE_URLS = {
+    openai: 'https://api.openai.com/v1',
+    anthropic: 'https://api.anthropic.com/v1',
+    gemini: 'https://generativelanguage.googleapis.com/v1beta/models'
+};
+
+function resolveBaseUrl(provider, endpoint) {
+    const trimmedEndpoint = (endpoint || '').trim().replace(/\/+$/, '');
+
+    if (provider === 'openai') {
+        const normalized = trimmedEndpoint.replace(/\/chat\/completions$/, '');
+        return normalized || DEFAULT_BASE_URLS.openai;
+    }
+
+    if (provider === 'anthropic') {
+        const normalized = trimmedEndpoint.replace(/\/messages$/, '');
+        return normalized || DEFAULT_BASE_URLS.anthropic;
+    }
+
+    return trimmedEndpoint || DEFAULT_BASE_URLS[provider] || trimmedEndpoint;
+}
+
 async function callAIForClassification(tabs, config) {
-    // Normalize endpoint URL (remove trailing slash to avoid double slashes)
-    const normalizeEndpoint = (url) => url.replace(/\/+$/, '');
-    const endpoint = normalizeEndpoint(config.apiEndpoint);
+    // Resolve the base URL for the current provider
+    const endpoint = resolveBaseUrl(config.apiProvider, config.apiEndpoint);
 
     // Get Chrome's display language
     const uiLanguage = chrome.i18n.getUILanguage(); // e.g., "zh-CN", "en-US", "ja"
@@ -48,7 +69,8 @@ Example: If there are shopping sites with IDs 123 and 456, return:
 
     if (config.apiProvider === 'anthropic') {
         // Anthropic API
-        response = await fetch(endpoint, {
+        const url = `${endpoint}/messages`;
+        response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -82,7 +104,8 @@ Example: If there are shopping sites with IDs 123 and 456, return:
         });
     } else {
         // OpenAI API
-        response = await fetch(endpoint, {
+        const url = `${endpoint}/chat/completions`;
+        response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

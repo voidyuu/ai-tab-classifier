@@ -13,7 +13,7 @@
         <header class="page-header">
             <p class="eyebrow">Extension Settings</p>
             <h1>AI Tab Classifier</h1>
-            <p class="page-subtitle">Choose a provider, set your model, and save. The interface stays compact and focused so the controls are easy to scan.</p>
+            <p class="page-subtitle">Choose a provider, set your model, and save.</p>
         </header>
 
         <div class="section section-card">
@@ -21,9 +21,12 @@
             <div class="form-group">
                 <label for="apiProvider">API Provider:</label>
                 <div class="provider-tabs" role="tablist" aria-label="API Provider">
-                    <button type="button" class="provider-tab" data-provider="gemini" role="tab" aria-selected="false">Google Gemini</button>
-                    <button type="button" class="provider-tab" data-provider="openai" role="tab" aria-selected="false">OpenAI</button>
-                    <button type="button" class="provider-tab" data-provider="anthropic" role="tab" aria-selected="false">Anthropic (Claude)</button>
+                    <button type="button" class="provider-tab" data-provider="gemini" role="tab"
+                        aria-selected="false">Google Gemini</button>
+                    <button type="button" class="provider-tab" data-provider="openai" role="tab"
+                        aria-selected="false">OpenAI</button>
+                    <button type="button" class="provider-tab" data-provider="anthropic" role="tab"
+                        aria-selected="false">Anthropic (Claude)</button>
                 </div>
             </div>
 
@@ -33,7 +36,11 @@
                 <small>Your API Key is securely stored locally and never uploaded to any server</small>
             </div>
 
-
+            <div class="form-group" id="apiEndpointGroup" style="display: none;">
+                <label for="apiEndpoint">Base URL:</label>
+                <input type="text" id="apiEndpoint" placeholder="https://api.openai.com/v1">
+                <small>Leave blank to use the official base URL.</small>
+            </div>
 
             <div class="form-group">
                 <label for="model">Model:</label>

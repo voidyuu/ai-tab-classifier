@@ -1,5 +1,7 @@
 // Get DOM elements
 const apiKeyInput = document.getElementById('apiKey');
+const apiEndpointInput = document.getElementById('apiEndpoint');
+const apiEndpointGroup = document.getElementById('apiEndpointGroup');
 const modelInput = document.getElementById('model');
 const saveConfigBtn = document.getElementById('saveConfig');
 const configStatus = document.getElementById('configStatus');
@@ -10,11 +12,11 @@ let activeProvider = 'openai';
 // Preset API configurations
 const API_CONFIGS = {
     openai: {
-        endpoint: 'https://api.openai.com/v1/chat/completions',
+        endpoint: 'https://api.openai.com/v1',
         defaultModel: 'gpt-4o-mini'
     },
     anthropic: {
-        endpoint: 'https://api.anthropic.com/v1/messages',
+        endpoint: 'https://api.anthropic.com/v1',
         defaultModel: 'claude-3-5-haiku-20241022'
     },
     gemini: {
@@ -22,6 +24,30 @@ const API_CONFIGS = {
         defaultModel: 'gemini-2.5-flash-lite'
     }
 };
+
+function getBaseUrlPlaceholder(provider) {
+    return API_CONFIGS[provider].endpoint;
+}
+
+function normalizeProviderEndpoint(provider, endpoint) {
+    const trimmedEndpoint = (endpoint || '').trim().replace(/\/+$/, '');
+
+    if (!trimmedEndpoint) {
+        return '';
+    }
+
+    if (provider === 'openai') {
+        const normalized = trimmedEndpoint.replace(/\/chat\/completions$/, '');
+        return normalized === API_CONFIGS.openai.endpoint ? '' : normalized;
+    }
+
+    if (provider === 'anthropic') {
+        const normalized = trimmedEndpoint.replace(/\/messages$/, '');
+        return normalized === API_CONFIGS.anthropic.endpoint ? '' : normalized;
+    }
+
+    return trimmedEndpoint;
+}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', async () => {
@@ -73,6 +99,15 @@ async function handleProviderChange() {
     apiKeyInput.value = providerConfig.apiKey || '';
     modelInput.value = providerConfig.model || API_CONFIGS[provider].defaultModel;
 
+    if (provider === 'openai' || provider === 'anthropic') {
+        apiEndpointGroup.style.display = 'block';
+        apiEndpointInput.placeholder = getBaseUrlPlaceholder(provider);
+        apiEndpointInput.value = normalizeProviderEndpoint(provider, providerConfig.apiEndpoint || '');
+    } else {
+        apiEndpointGroup.style.display = 'none';
+        apiEndpointInput.value = '';
+    }
+
     // Show API key field
     const apiKeyGroup = document.querySelector('.form-group:has(#apiKey)');
     apiKeyGroup.style.display = 'block';
@@ -82,6 +117,7 @@ async function handleProviderChange() {
 async function saveConfig() {
     const apiProvider = activeProvider;
     const apiKey = apiKeyInput.value.trim();
+    const apiEndpoint = normalizeProviderEndpoint(apiProvider, apiEndpointInput.value);
     const model = modelInput.value.trim();
 
     if (!apiKey) {
@@ -102,7 +138,9 @@ async function saveConfig() {
     await chrome.storage.sync.set({
         [storageKey]: {
             apiKey,
-            apiEndpoint: API_CONFIGS[apiProvider].endpoint,
+            apiEndpoint: apiProvider === 'openai' || apiProvider === 'anthropic'
+                ? apiEndpoint
+                : API_CONFIGS[apiProvider].endpoint,
             model
         }
     });
@@ -110,7 +148,9 @@ async function saveConfig() {
     // Also save as default config for backward compatibility
     await chrome.storage.sync.set({
         apiKey,
-        apiEndpoint: API_CONFIGS[apiProvider].endpoint,
+        apiEndpoint: apiProvider === 'openai' || apiProvider === 'anthropic'
+            ? apiEndpoint
+            : API_CONFIGS[apiProvider].endpoint,
         model
     });
 

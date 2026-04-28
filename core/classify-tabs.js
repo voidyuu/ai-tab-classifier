@@ -1,5 +1,9 @@
 // Main function to classify tabs
 async function classifyTabs(windowId) {
+    if (!beginIconOperation()) {
+        return;
+    }
+
     try {
 
         // Set icon to loading state
@@ -11,7 +15,7 @@ async function classifyTabs(windowId) {
         if (!config.apiKey) {
             setIconState('error', 'Please configure API Key in settings');
             chrome.runtime.openOptionsPage();
-            setTimeout(() => setIconState('idle'), 3000);
+            scheduleIconIdle();
             return;
         }
 
@@ -19,7 +23,7 @@ async function classifyTabs(windowId) {
         const currentWindow = await chrome.windows.get(windowId);
         if (currentWindow.type !== 'normal') {
             setIconState('error', 'Tab groups only work in normal windows');
-            setTimeout(() => setIconState('idle'), 3000);
+            scheduleIconIdle();
             return;
         }
 
@@ -28,7 +32,7 @@ async function classifyTabs(windowId) {
 
         if (tabs.length === 0) {
             setIconState('error', 'No tabs found');
-            setTimeout(() => setIconState('idle'), 3000);
+            scheduleIconIdle();
             return;
         }
 
@@ -55,7 +59,7 @@ async function classifyTabs(windowId) {
         if (!groups || !Array.isArray(groups) || groups.length === 0) {
             console.error('Invalid groups format:', groups);
             setIconState('error', 'Invalid group data format from AI');
-            setTimeout(() => setIconState('idle'), 3000);
+            scheduleIconIdle();
             return;
         }
 
@@ -84,7 +88,7 @@ async function classifyTabs(windowId) {
         if (filteredGroups.length === 0) {
             console.warn('No valid groups after filtering. Original groups:', groups);
             setIconState('error', 'All tabs were closed or grouped during classification');
-            setTimeout(() => setIconState('idle'), 3000);
+            scheduleIconIdle();
             return;
         }
 
@@ -92,10 +96,12 @@ async function classifyTabs(windowId) {
         await applyGroups(filteredGroups, windowId);
 
         setIconState('success', `Successfully classified tabs into ${filteredGroups.length} groups!`);
-        setTimeout(() => setIconState('idle'), 3000);
+        scheduleIconIdle();
     } catch (error) {
         console.error('Classification failed:', error);
         setIconState('error', `Classification failed: ${error.message}`);
-        setTimeout(() => setIconState('idle'), 3000);
+        scheduleIconIdle();
+    } finally {
+        endIconOperation();
     }
 }

@@ -1,4 +1,36 @@
 // Set icon state
+let iconIdleTimerId = null;
+let operationRunning = false;
+
+function beginIconOperation() {
+    if (operationRunning) {
+        return false;
+    }
+
+    operationRunning = true;
+    if (iconIdleTimerId) {
+        clearTimeout(iconIdleTimerId);
+        iconIdleTimerId = null;
+    }
+
+    return true;
+}
+
+function endIconOperation() {
+    operationRunning = false;
+}
+
+function scheduleIconIdle(delay = 3000) {
+    if (iconIdleTimerId) {
+        clearTimeout(iconIdleTimerId);
+    }
+
+    iconIdleTimerId = setTimeout(() => {
+        iconIdleTimerId = null;
+        setIconState('idle');
+    }, delay);
+}
+
 function setIconState(state, title = '') {
     const defaultTitle = 'Click to classify tabs with AI';
     const notificationTitle = 'AI Tab Classifier';

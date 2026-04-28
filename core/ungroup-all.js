@@ -1,5 +1,9 @@
 // Ungroup all tabs
 async function ungroupAll(windowId) {
+    if (!beginIconOperation()) {
+        return;
+    }
+
     try {
 
         setIconState('loading');
@@ -8,7 +12,7 @@ async function ungroupAll(windowId) {
         const currentWindow = await chrome.windows.get(windowId);
         if (currentWindow.type !== 'normal') {
             setIconState('error', 'Tab groups only work in normal windows');
-            setTimeout(() => setIconState('idle'), 3000);
+            scheduleIconIdle();
             return;
         }
 
@@ -32,10 +36,12 @@ async function ungroupAll(windowId) {
         }
 
         setIconState('success', `Ungrouped ${groups.length} groups, ${allGroupedTabIds.length} tabs total`);
-        setTimeout(() => setIconState('idle'), 3000);
+        scheduleIconIdle();
     } catch (error) {
         console.error('Ungroup failed:', error);
         setIconState('error', `Ungroup failed: ${error.message}`);
-        setTimeout(() => setIconState('idle'), 3000);
+        scheduleIconIdle();
+    } finally {
+        endIconOperation();
     }
 }

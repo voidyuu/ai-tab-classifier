@@ -161,6 +161,12 @@ small {
     font-size: 12px;
 }
 
+.autosave-hint {
+    margin-top: 8px;
+    color: #4f6582;
+    font-weight: 600;
+}
+
 .btn {
     padding: 13px 20px;
     border: none;

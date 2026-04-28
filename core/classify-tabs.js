@@ -9,8 +9,20 @@ async function classifyTabs(windowId) {
         // Set icon to loading state
         setIconState('loading');
 
-        // Get configuration
-        const config = await chrome.storage.sync.get(['apiProvider', 'apiKey', 'apiEndpoint', 'model']);
+        // Get configuration for the currently selected provider
+        const { apiProvider = 'openai', apiKey: fallbackApiKey, apiEndpoint: fallbackApiEndpoint, model: fallbackModel } =
+            await chrome.storage.sync.get(['apiProvider', 'apiKey', 'apiEndpoint', 'model']);
+
+        const providerKey = `config_${apiProvider}`;
+        const providerConfigResult = await chrome.storage.sync.get([providerKey]);
+        const providerConfig = providerConfigResult[providerKey] || {};
+
+        const config = {
+            apiProvider,
+            apiKey: providerConfig.apiKey || fallbackApiKey,
+            apiEndpoint: providerConfig.apiEndpoint || fallbackApiEndpoint,
+            model: providerConfig.model || fallbackModel
+        };
 
         if (!config.apiKey) {
             setIconState('error', 'Please configure API Key in settings');

@@ -3,11 +3,11 @@ const apiKeyInput = document.getElementById('apiKey');
 const apiEndpointInput = document.getElementById('apiEndpoint');
 const apiEndpointGroup = document.getElementById('apiEndpointGroup');
 const modelInput = document.getElementById('model');
-const saveConfigBtn = document.getElementById('saveConfig');
 const configStatus = document.getElementById('configStatus');
 const apiProviderTabs = Array.from(document.querySelectorAll('.provider-tab'));
 
 let activeProvider = 'openai';
+let saveTimerId = null;
 
 // Preset API configurations
 const API_CONFIGS = {
@@ -73,10 +73,19 @@ function setupEventListeners() {
     apiProviderTabs.forEach((tab) => {
         tab.addEventListener('click', async () => {
             activeProvider = tab.dataset.provider;
+            if (saveTimerId) {
+                clearTimeout(saveTimerId);
+                saveTimerId = null;
+            }
+            await chrome.storage.sync.set({ apiProvider: activeProvider });
             await handleProviderChange();
         });
     });
-    saveConfigBtn.addEventListener('click', saveConfig);
+
+    [apiKeyInput, apiEndpointInput, modelInput].forEach((input) => {
+        input.addEventListener('input', scheduleAutosave);
+        input.addEventListener('change', scheduleAutosave);
+    });
 }
 
 // Handle API provider changes
@@ -113,48 +122,54 @@ async function handleProviderChange() {
     apiKeyGroup.style.display = 'block';
 }
 
+function scheduleAutosave() {
+    if (saveTimerId) {
+        clearTimeout(saveTimerId);
+    }
+
+    saveTimerId = setTimeout(() => {
+        saveTimerId = null;
+        saveConfig().catch((error) => {
+            showStatus('error', `Save failed: ${error.message}`);
+        });
+    }, 250);
+}
+
 // Save configuration
 async function saveConfig() {
-    const apiProvider = activeProvider;
-    const apiKey = apiKeyInput.value.trim();
-    const apiEndpoint = normalizeProviderEndpoint(apiProvider, apiEndpointInput.value);
-    const model = modelInput.value.trim();
+    try {
+        const apiProvider = activeProvider;
+        const apiKey = apiKeyInput.value.trim();
+        const apiEndpoint = normalizeProviderEndpoint(apiProvider, apiEndpointInput.value);
+        const model = modelInput.value.trim();
 
-    if (!apiKey) {
-        showStatus('error', 'Please enter API Key');
-        return;
-    }
+        // Save current provider
+        await chrome.storage.sync.set({ apiProvider });
 
-    if (!model) {
-        showStatus('error', 'Please enter model name');
-        return;
-    }
+        // Save provider-specific config
+        const storageKey = `config_${apiProvider}`;
+        await chrome.storage.sync.set({
+            [storageKey]: {
+                apiKey,
+                apiEndpoint: apiProvider === 'openai' || apiProvider === 'anthropic'
+                    ? apiEndpoint
+                    : API_CONFIGS[apiProvider].endpoint,
+                model
+            }
+        });
 
-    // Save current provider
-    await chrome.storage.sync.set({ apiProvider });
-
-    // Save provider-specific config
-    const storageKey = `config_${apiProvider}`;
-    await chrome.storage.sync.set({
-        [storageKey]: {
+        // Also save as default config for backward compatibility
+        await chrome.storage.sync.set({
             apiKey,
             apiEndpoint: apiProvider === 'openai' || apiProvider === 'anthropic'
                 ? apiEndpoint
                 : API_CONFIGS[apiProvider].endpoint,
             model
-        }
-    });
+        });
 
-    // Also save as default config for backward compatibility
-    await chrome.storage.sync.set({
-        apiKey,
-        apiEndpoint: apiProvider === 'openai' || apiProvider === 'anthropic'
-            ? apiEndpoint
-            : API_CONFIGS[apiProvider].endpoint,
-        model
-    });
-
-    showStatus('success', '✓ Configuration saved successfully!');
+    } catch (error) {
+        showStatus('error', `Save failed: ${error.message}`);
+    }
 }
 
 // Display status message
